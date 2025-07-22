@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pizarra Virtual Colaborativa</title>
+  <style>
+    body {
+      background: #f4f4f4;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .toolbar {
+      margin: 10px;
+    }
+    .toolbar button, .toolbar input {
+      margin-right: 5px;
+      padding: 5px;
+    }
+    canvas {
+      border: 2px solid #333;
+      background: white;
+      cursor: crosshair;
+    }
+    .host-controls {
+      margin: 10px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toolbar">
+    <button id="pencil">✏️ Lápiz</button>
+    <button id="eraser">🧽 Borrador</button>
+    <button id="rectangle">▭ Rectángulo</button>
+    <button id="circle">⚪ Círculo</button>
+    <input type="color" id="colorPicker" value="#000000">
+    <input type="range" id="thickness" min="1" max="10" value="2">
+  </div>
+
+  <div class="host-controls" id="hostControls">
+    <button id="toggleDraw">🔒 Bloquear dibujo</button>
+    <button id="toggleAudio">🔇 Bloquear micrófonos</button>
+  </div>
+
+  <canvas id="board" width="800" height="600"></canvas>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="socket.js"></script>
+  <script src="main.js"></script>
+  <script src="rtc.js"></script>
+</body>
+</html>
