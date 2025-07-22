@@ -44,13 +44,23 @@
   <div class="host-controls" id="hostControls">
     <button id="toggleDraw">🔒 Bloquear dibujo</button>
     <button id="toggleAudio">🔇 Bloquear micrófonos</button>
+    <button id="clearBoard">🧹 Borrar pizarra</button>
   </div>
 
   <canvas id="board" width="800" height="600"></canvas>
+
+  <!-- Chat de texto -->
+<div id="chatBox" style="margin-top: 10px;">
+  <div id="chatMessages" style="height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 5px;"></div>
+  <input id="chatInput" type="text" placeholder="Escribe un mensaje..." style="width: 70%;">
+  <button id="sendChat">Enviar</button>
+</div>
+
 
   <script src="/socket.io/socket.io.js"></script>
   <script src="socket.js"></script>
   <script src="main.js"></script>
   <script src="rtc.js"></script>
+
 </body>
 </html>

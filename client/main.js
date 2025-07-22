@@ -7,9 +7,6 @@ let startX, startY;
 let strokeColor = '#000';
 let lineWidth = 2;
 
-let isHost = false;
-let canDraw = true;
-
 // Selectores
 document.getElementById('pencil').onclick = () => currentTool = 'pencil';
 document.getElementById('eraser').onclick = () => currentTool = 'eraser';
@@ -39,8 +36,13 @@ toggleAudio.onclick = () => {
   toggleAudio.textContent = audioState ? '🔇 Bloquear micrófonos' : '🔊 Permitir micrófonos';
 };
 
+// Canvas listeners
 canvas.addEventListener('mousedown', e => {
-  if (!canDraw) return;
+  if (!window.isHost && !window.canDraw) {
+    console.log('⛔ Bloqueado: no puedes dibujar');
+    return;
+  }
+
   painting = true;
   startX = e.offsetX;
   startY = e.offsetY;
@@ -51,7 +53,7 @@ canvas.addEventListener('mousedown', e => {
 });
 
 canvas.addEventListener('mousemove', e => {
-  if (!painting || !canDraw) return;
+  if (!painting || (!window.isHost && !window.canDraw)) return;
 
   const x = e.offsetX;
   const y = e.offsetY;
@@ -70,7 +72,7 @@ canvas.addEventListener('mousemove', e => {
 });
 
 canvas.addEventListener('mouseup', e => {
-  if (!canDraw) return;
+  if (!window.isHost && !window.canDraw) return;
   painting = false;
   const endX = e.offsetX;
   const endY = e.offsetY;
@@ -85,7 +87,6 @@ canvas.addEventListener('mouseup', e => {
 });
 
 // Funciones de dibujo
-
 function drawLine(x1, y1, x2, y2, color, width, emit = true) {
   ctx.strokeStyle = color;
   ctx.lineWidth = width;
@@ -116,3 +117,40 @@ function drawCircle(x1, y1, x2, y2, color, width, emit = true) {
 
   if (emit) socket.emit('drawCircle', { x1, y1, x2, y2, color, width });
 }
+const clearBoardBtn = document.getElementById('clearBoard');
+
+clearBoardBtn.onclick = () => {
+  if (!window.isHost) return;
+
+  clearCanvas(); // limpiar local
+  socket.emit('clearBoard'); // notificar a todos
+};
+
+// Función para limpiar canvas
+function clearCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+const chatInput = document.getElementById('chatInput');
+const sendChat = document.getElementById('sendChat');
+const chatMessages = document.getElementById('chatMessages');
+
+sendChat.onclick = () => {
+  const msg = chatInput.value.trim();
+  if (msg) {
+    socket.emit('chatMessage', msg);
+    chatInput.value = '';
+  }
+};
+
+socket.on('chatMessage', msg => {
+  const div = document.createElement('div');
+  div.textContent = msg;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+});
+toggleAudio.onclick = () => {
+  audioState = !audioState;
+  socket.emit('toggleAudio', audioState);
+  toggleAudio.textContent = audioState ? '🔇 Bloquear micrófonos' : '🔊 Permitir micrófonos';
+};
+

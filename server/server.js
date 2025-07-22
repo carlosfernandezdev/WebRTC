@@ -7,18 +7,24 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 
-// Servir archivos del cliente
 app.use(express.static(path.join(__dirname, '../client')));
 
-// Variables globales
 let hostId = null;
 let drawingEnabled = true;
 let audioEnabled = true;
 
 io.on('connection', socket => {
   console.log('🔗 Usuario conectado:', socket.id);
+  socket.on('chatMessage', msg => {
+  io.emit('chatMessage', msg);
+});
 
-  // Asignar rol
+
+socket.on('offer', data => socket.broadcast.emit('offer', data));
+socket.on('answer', data => socket.broadcast.emit('answer', data));
+socket.on('ice-candidate', data => socket.broadcast.emit('ice-candidate', data));
+
+  // Asignar host
   if (!hostId) {
     hostId = socket.id;
     socket.emit('role', 'host');
@@ -26,29 +32,41 @@ io.on('connection', socket => {
     socket.emit('role', 'guest');
   }
 
-  // Notificar a otros que hay un nuevo usuario (para WebRTC)
-  socket.broadcast.emit('new-user', socket.id);
+  // ✅ Función auxiliar: enviar a todos o a todos menos uno
+  const emitDraw = (event, data) => {
+    if (socket.id === hostId) {
+      io.emit(event, data); // todos incluyendo host
+    } else {
+      socket.broadcast.emit(event, data); // todos menos él
+    }
+  };
+  socket.on('clearBoard', () => {
+  if (socket.id === hostId) {
+    io.emit('clearBoard');
+  }
+});
 
-  // 🎨 Dibujo colaborativo (canvas)
+
+  // 🖌 Eventos de dibujo
   socket.on('drawLine', data => {
     if (drawingEnabled || socket.id === hostId) {
-      socket.broadcast.emit('remoteDrawLine', data);
+      emitDraw('remoteDrawLine', data);
     }
   });
 
   socket.on('drawRect', data => {
     if (drawingEnabled || socket.id === hostId) {
-      socket.broadcast.emit('remoteDrawRect', data);
+      emitDraw('remoteDrawRect', data);
     }
   });
 
   socket.on('drawCircle', data => {
     if (drawingEnabled || socket.id === hostId) {
-      socket.broadcast.emit('remoteDrawCircle', data);
+      emitDraw('remoteDrawCircle', data);
     }
   });
 
-  // 🔒 Control de dibujo
+  // 🔒 Control de permisos
   socket.on('toggleDrawing', enabled => {
     if (socket.id === hostId) {
       drawingEnabled = enabled;
@@ -56,7 +74,6 @@ io.on('connection', socket => {
     }
   });
 
-  // 🔇 Control de audio
   socket.on('toggleAudio', enabled => {
     if (socket.id === hostId) {
       audioEnabled = enabled;
@@ -64,34 +81,16 @@ io.on('connection', socket => {
     }
   });
 
-  // 🔁 Señalización WebRTC
-  socket.on('offer', ({ to, offer }) => {
-    io.to(to).emit('offer', { from: socket.id, offer });
-  });
-
-  socket.on('answer', ({ to, answer }) => {
-    io.to(to).emit('answer', { from: socket.id, answer });
-  });
-
-  socket.on('ice-candidate', ({ to, candidate }) => {
-    io.to(to).emit('ice-candidate', { from: socket.id, candidate });
-  });
-
-  // ❌ Desconexión
+  // 🔌 Desconexión
   socket.on('disconnect', () => {
-    console.log('🔴 Usuario desconectado:', socket.id);
-
     if (socket.id === hostId) {
-      console.log('🛑 El host ha salido. Finalizando sesión...');
+      console.log('🛑 El host ha salido. Cerrando sesión...');
       hostId = null;
       io.emit('sessionEnded');
     }
-
-    socket.broadcast.emit('user-disconnected', socket.id);
   });
 });
 
-// Lanzar servidor
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor activo en http://localhost:${PORT}`);
