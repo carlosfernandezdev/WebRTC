@@ -15,16 +15,8 @@ let audioEnabled = true;
 
 io.on('connection', socket => {
   console.log('🔗 Usuario conectado:', socket.id);
-  socket.on('chatMessage', msg => {
-  io.emit('chatMessage', msg);
-});
 
-
-socket.on('offer', data => socket.broadcast.emit('offer', data));
-socket.on('answer', data => socket.broadcast.emit('answer', data));
-socket.on('ice-candidate', data => socket.broadcast.emit('ice-candidate', data));
-
-  // Asignar host
+  // 🎓 Asignar rol de host
   if (!hostId) {
     hostId = socket.id;
     socket.emit('role', 'host');
@@ -32,20 +24,31 @@ socket.on('ice-candidate', data => socket.broadcast.emit('ice-candidate', data))
     socket.emit('role', 'guest');
   }
 
-  // ✅ Función auxiliar: enviar a todos o a todos menos uno
+  // 💬 Chat de texto
+  socket.on('chatMessage', msg => {
+    io.emit('chatMessage', msg);
+  });
+
+  // 🔈 Señalización WebRTC
+  socket.on('offer', data => socket.broadcast.emit('offer', data));
+  socket.on('answer', data => socket.broadcast.emit('answer', data));
+  socket.on('ice-candidate', data => socket.broadcast.emit('ice-candidate', data));
+
+  // 🧽 Limpiar pizarra (solo el host)
+  socket.on('clearBoard', () => {
+    if (socket.id === hostId) {
+      io.emit('clearBoard');
+    }
+  });
+
+  // ✅ Función auxiliar para emitir eventos de dibujo
   const emitDraw = (event, data) => {
     if (socket.id === hostId) {
-      io.emit(event, data); // todos incluyendo host
+      io.emit(event, data); // todos, incluyendo host
     } else {
       socket.broadcast.emit(event, data); // todos menos él
     }
   };
-  socket.on('clearBoard', () => {
-  if (socket.id === hostId) {
-    io.emit('clearBoard');
-  }
-});
-
 
   // 🖌 Eventos de dibujo
   socket.on('drawLine', data => {
@@ -66,7 +69,7 @@ socket.on('ice-candidate', data => socket.broadcast.emit('ice-candidate', data))
     }
   });
 
-  // 🔒 Control de permisos
+  // 🔒 Controles del host
   socket.on('toggleDrawing', enabled => {
     if (socket.id === hostId) {
       drawingEnabled = enabled;
@@ -81,7 +84,7 @@ socket.on('ice-candidate', data => socket.broadcast.emit('ice-candidate', data))
     }
   });
 
-  // 🔌 Desconexión
+  // ❌ Desconexión
   socket.on('disconnect', () => {
     if (socket.id === hostId) {
       console.log('🛑 El host ha salido. Cerrando sesión...');

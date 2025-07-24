@@ -55,6 +55,15 @@
   <input id="chatInput" type="text" placeholder="Escribe un mensaje..." style="width: 70%;">
   <button id="sendChat">Enviar</button>
 </div>
+<div id="micTestContainer" style="margin-top: 1rem;">
+  <button id="testMicBtn">🎙️ Probar micrófono</button>
+  <div style="margin-top: 0.5rem;">
+    Nivel de audio:
+    <div style="background: #ddd; width: 200px; height: 10px; border-radius: 5px; overflow: hidden;">
+      <div id="micLevel" style="height: 100%; background: #4caf50; width: 0%; transition: width 0.1s;"></div>
+    </div>
+  </div>
+</div>
 
 
   <script src="/socket.io/socket.io.js"></script>
