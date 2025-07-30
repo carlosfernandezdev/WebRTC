@@ -8,30 +8,35 @@
       box-sizing: border-box;
     }
 
-    body {
+    html, body {
       margin: 0;
       padding: 0;
+      height: 100%;
       font-family: Arial, sans-serif;
       background: #f4f4f4;
-      display: flex;
-      height: 100vh;
-      overflow: hidden;
     }
 
-    #leftPane {
-      flex: 1;
+    #mainContainer {
+      display: flex;
+      height: 100vh;
+      width: 100%;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #leftPanel {
       display: flex;
       flex-direction: column;
+      gap: 10px;
+      background: #ddd;
+      padding: 10px;
     }
 
     .toolbar {
       display: flex;
-      padding: 8px;
-      background: #ddd;
-      align-items: center;
+      flex-wrap: wrap;
       gap: 5px;
-      height: 50px;
-      flex-shrink: 0;
     }
 
     .toolbar button, .toolbar input {
@@ -40,34 +45,40 @@
 
     #hostControls {
       display: none;
-      padding: 8px;
-      background: #ccc;
-      height: 50px;
-      flex-shrink: 0;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    #centerPanel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      padding: 10px;
+      border: 2px solid #333;
     }
 
     #board {
-      flex: 1;
       background: white;
-      border: 2px solid #333;
-      width: 100%;
-      display: block;
+      width: 1000px;
+      height: 600px;
     }
 
-    #rightPane {
+    #rightPanel {
       width: 300px;
+      background: #fafafa;
+      padding: 10px;
       border-left: 1px solid #999;
       display: flex;
       flex-direction: column;
-      padding: 10px;
-      background: #fafafa;
+      justify-content: space-between;
+      height: 100%;
     }
 
     #chatBox {
       flex: 1;
       display: flex;
       flex-direction: column;
-      height: 100%;
     }
 
     #chatMessages {
@@ -77,17 +88,13 @@
       padding: 5px;
       background: white;
       margin-bottom: 5px;
+      height: 400px;
     }
 
-    #chatInput {
-      padding: 5px;
+    #chatInput, #sendChat {
       width: 100%;
+      padding: 5px;
       margin-bottom: 5px;
-    }
-
-    #sendChat {
-      padding: 5px;
-      width: 100%;
     }
 
     #micTestContainer {
@@ -111,34 +118,44 @@
   </style>
 </head>
 <body>
-  <div id="leftPane">
-    <div class="toolbar">
-      <button id="pencil">✏️ Lápiz</button>
-      <button id="eraser">🧽 Borrador</button>
-      <button id="rectangle">▭ Rectángulo</button>
-      <button id="circle">⚪ Círculo</button>
-      <input type="color" id="colorPicker" value="#000000">
-      <input type="range" id="thickness" min="1" max="10" value="2">
-    </div>
-    <div id="hostControls">
-      <button id="toggleDraw">🔒 Bloquear dibujo</button>
-      <button id="toggleAudio">🔇 Bloquear micrófonos</button>
-      <button id="clearBoard">🧹 Borrar pizarra</button>
-    </div>
-    <canvas id="board" width="1000" height="600"></canvas>
-  </div>
+  <div id="mainContainer">
 
-  <div id="rightPane">
-    <div id="chatBox">
-      <div id="chatMessages"></div>
-      <input id="chatInput" type="text" placeholder="Escribe un mensaje...">
-      <button id="sendChat">Enviar</button>
+    <!-- Panel izquierdo -->
+    <div id="leftPanel">
+      <div class="toolbar">
+        <button id="pencil">✏️ Lápiz</button>
+        <button id="eraser">🧽 Borrador</button>
+        <button id="rectangle">▭ Rectángulo</button>
+        <button id="circle">⚪ Círculo</button>
+        <input type="color" id="colorPicker" value="#000000">
+        <input type="range" id="thickness" min="1" max="10" value="2">
+      </div>
+      <div id="hostControls">
+        <button id="toggleDraw">🔒 Bloquear dibujo</button>
+        <button id="toggleAudio">🔇 Bloquear micrófonos</button>
+        <button id="clearBoard">🧹 Borrar pizarra</button>
+      </div>
     </div>
-    <div id="micTestContainer">
-      <button id="testMicBtn">🎙️ Probar micrófono</button>
-      <div style="margin-top: 0.5rem;">Nivel de audio:</div>
-      <div class="audio-bar"><div id="micLevel"></div></div>
+
+    <!-- Panel central con la pizarra -->
+    <div id="centerPanel">
+      <canvas id="board" width="1000" height="600"></canvas>
     </div>
+
+    <!-- Panel derecho con el chat -->
+    <div id="rightPanel">
+      <div id="chatBox">
+        <div id="chatMessages"></div>
+        <input id="chatInput" type="text" placeholder="Escribe un mensaje...">
+        <button id="sendChat">Enviar</button>
+      </div>
+      <div id="micTestContainer">
+        <button id="testMicBtn">🎙️ Probar micrófono</button>
+        <div style="margin-top: 0.5rem;">Nivel de audio:</div>
+        <div class="audio-bar"><div id="micLevel"></div></div>
+      </div>
+    </div>
+
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
